@@ -406,6 +406,18 @@ class UserForm(forms.ModelForm):
         self.helper.form_tag = False
         self.helper.template_pack = "bootstrap5"
 
+    def clean(self) -> None:
+        cleaned_data = super().clean()
+
+        orig = User.objects.get(pk=self.instance.pk)
+        orig_username = getattr(orig, "username")
+        new_username = cleaned_data.get("username")
+
+        if orig_username != new_username:
+            self.add_error("username", gettext("Username changed"))
+
+        return cleaned_data
+
     @classmethod
     def from_request(cls, request: AuthenticatedHttpRequest):
         if request.method == "POST":
